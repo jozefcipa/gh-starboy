@@ -1,0 +1,13 @@
+{
+  "tasks": {
+    "dev": "denoflare serve gh-starboy --bundle 'backend=esbuild'",
+    "deploy": "denoflare push gh-starboy --verbose --bundle 'backend=esbuild'"
+  },
+  "fmt": {
+    "options": {
+      "indentWidth": 2,
+      "singleQuote": true,
+      "semiColons": false
+    }
+  }
+}
