@@ -1,7 +1,7 @@
 {
   "tasks": {
-    "dev": "denoflare serve gh-starboy --bundle 'backend=esbuild'",
-    "deploy": "denoflare push gh-starboy --verbose --bundle 'backend=esbuild'"
+    "dev": "denoflare serve gh-starboy --secret-binding GH_WEBHOOK_SECRET:\"$GH_WEBHOOK_SECRET\" --bundle 'backend=esbuild'",
+    "deploy": "denoflare push gh-starboy --secret-binding GH_WEBHOOK_SECRET:\"$GH_WEBHOOK_SECRET\" --verbose --bundle 'backend=esbuild'"
   },
   "fmt": {
     "options": {
