@@ -1,30 +1,19 @@
 import { verifySignature } from './github/signature.ts'
 import { GithubStarEvent } from './github/types.ts'
-
-// TODO what needs to be don
-// - create a cloudflare function handler
-//    - denoflare init, resolve some issues with the version incompatibilities
-//    - define .denoflare file, use environment variables from .env file
-//    - denoflare push
-//    - https://gh-starboy.jozef-cipa.workers.dev/
-
-// - connect github webhook & verify HMAC
-//    - https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks
-//    - verify HMAC
-
-// - connect telegram sdk
-
-// Notes:
-// denoflare setup troubleshooting: https://github.com/skymethod/denoflare/issues/77#issuecomment-2558179923
+import { TelegramBot } from './telegram/bot.ts'
 
 interface Env {
   GH_WEBHOOK_SECRET?: string
+  TELEGRAM_API_KEY?: string
+  TELEGRAM_CHAT_ID?: string
 }
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    if (!env.GH_WEBHOOK_SECRET) {
-      console.error('Environment variable GH_WEBHOOK_SECRET not set')
+    if (
+      !env.GH_WEBHOOK_SECRET || !env.TELEGRAM_API_KEY || !env.TELEGRAM_CHAT_ID
+    ) {
+      console.error('Some of the environment variable are missing', env)
       return new Response(
         JSON.stringify({ error: 'Internal error' }),
         { status: 500 },
@@ -61,11 +50,21 @@ export default {
     }
 
     if (githubData.action === 'created') {
-      // send a telegram message
-
       console.log(`Yay, a new star added to ${githubData.repository.full_name}`)
+
+      // send a telegram message
+      const telegram = new TelegramBot(env.TELEGRAM_API_KEY)
+      const message = `
+🤩 New star for ${githubData.repository.full_name}
+
+${githubData.sender.login} just starred your repository, bringing the total to ${githubData.repository.stargazers_count} ⭐
+${githubData.repository.html_url}`
+      await telegram.sendMessage(env.TELEGRAM_CHAT_ID, message)
     } else if (githubData.action === 'deleted') {
       // Sad ... 😢
+      console.log(
+        `Oh no, @${githubData.sender.login} removed their star from ${githubData.repository.full_name}`,
+      )
     }
 
     return new Response(null, { status: 204 })
